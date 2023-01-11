@@ -21,7 +21,6 @@ void ReadIniFile(std::istream& is, void(*evtCallback)(const ReaderEvent& evt))
 		
 		if (!eof)
 		{
-			currentPos.initIfNew();
 			currentPos.advance();
 		}
 

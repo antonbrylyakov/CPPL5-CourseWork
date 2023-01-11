@@ -5,13 +5,8 @@ class FilePos
 {
 public:
 	void newLine();
-
 	void advance();
-
-	void initIfNew();
-
 	size_t getLine();
-
 	size_t getCol();
 
 private:

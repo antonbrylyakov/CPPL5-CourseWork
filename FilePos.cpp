@@ -9,15 +9,12 @@ void FilePos::newLine()
 
 void FilePos::advance()
 {
-	++m_col;
-}
-
-void FilePos::initIfNew()
-{
 	if (m_line == NO_LINE)
 	{
 		m_line = 1;
 	}
+
+	++m_col;
 }
 
 size_t FilePos::getLine()
