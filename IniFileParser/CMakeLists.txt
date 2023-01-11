@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.10)
+project(IniFileParser)
+set(sources  "ReaderEvent.h" "Constants.h" "ReaderEvent.cpp" "ReadIniFile.cpp" "CommentEvent.h" "CommentEvent.cpp" "ReadFinishEvent.h" "ReadFinishEvent.cpp" "ErrorEvent.h" "ErrorEvent.cpp"   "CharUtils.h" "CharUtils.cpp" "FilePos.cpp" "FilePos.h" "IniFileParserExports.h")
+add_library(IniFileParser SHARED ${sources})
+target_compile_definitions(IniFileParser PRIVATE INIFILEPARSER_EXPORTS)
+add_executable(IniFileParserTests ${sources} "test_main.cpp")
