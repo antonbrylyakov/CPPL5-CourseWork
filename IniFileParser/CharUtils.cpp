@@ -11,4 +11,8 @@ namespace CharUtils
 	{
 		return ch >= '0' && ch <= '9';
 	}
+	bool isSpace(char ch)
+	{
+		return ch == ' ' || ch == '\t';
+	}
 }

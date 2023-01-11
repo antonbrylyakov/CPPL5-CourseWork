@@ -1,24 +1,33 @@
 ﻿#include <string>
 #include <list>
+#include <sstream>
 #include "ReadIniFile.h"
 #include "Constants.h"
-#include "ReadFinishEvent.h"
 #include "CommentEvent.h"
+#include "ParseError.h"
 #include "CharUtils.h"
 #include "FilePos.h"
+#include "SectionStartEvent.h"
+#include "ParameterValueEvent.h"
 
 
-void ReadIniFile(std::istream& is, void(*evtCallback)(const ReaderEvent& evt))
+void readIniFile(std::istream& is, void(*evtCallback)(const ReaderEvent& evt))
 {
 	ReaderStates state = INITIAL;
 	FilePos currentPos, eventStartPos;
 	char ch;
 	std::list<char> eventBuf;
+	std::string paramName;
+
+	auto raiseError = [evtCallback, &currentPos](std::string&& msg)
+	{
+		throw ParseError(msg);
+	};
 
 	while (true)
 	{
 		auto eof = !is.get(ch);
-		
+
 		if (!eof)
 		{
 			currentPos.advance();
@@ -31,17 +40,25 @@ void ReadIniFile(std::istream& is, void(*evtCallback)(const ReaderEvent& evt))
 			switch (state)
 			{
 			case COMMENT_STARTED:
-				// raise comment event
-				break;
+			{
+				std::string commentText(eventBuf.cbegin(), eventBuf.cend());
+				CommentEvent evt(currentPos.getLine(), currentPos.getCol(), std::move(commentText));
+				evtCallback(evt);
+			}
+			break;
 			case SECTION_NAME_STARTED:
-				// raise error that section name not closed
+				raiseError("Ожидалось закрытие заголовка секции, а найден перенос строки");
 				break;
 			case PARAM_NAME_STARTED:
-				// raise error that param value is missing
+				raiseError("Ожидался знак '=', а найден перенос строки");
 				break;
 			case PARAM_VALUE_STARTED:
-				// raise param event
-				break;
+			{
+				std::string paramValue(eventBuf.cbegin(), eventBuf.cend());
+				ParameterValueEvent evt(currentPos.getLine(), currentPos.getCol(), std::move(paramName), std::move(paramValue));
+				evtCallback(evt);
+			}
+			break;
 			}
 
 			if (ch == CH_CARET_RETURN && state != WAITING_FOR_NEW_LINE_CHAR)
@@ -76,12 +93,24 @@ void ReadIniFile(std::istream& is, void(*evtCallback)(const ReaderEvent& evt))
 			switch (state)
 			{
 			case INITIAL:
-				// raise error that section is not started
+				raiseError("Идентификаторы параметров не допускаются вне секций");
+				break;
+			case WAITING_FOR_SECTION_NAME:
+				state = SECTION_NAME_STARTED;
+				eventBuf.clear();
+				eventStartPos = currentPos;
 				break;
 			case SECTION_BODY_STARTED:
 				eventBuf.clear();
 				eventStartPos = currentPos;
 				break;
+			case WAITING_FOR_EQUALITY_SIGN:
+			{
+				std::stringstream s;
+				s << "Ожидался знак '=', а найден символ '" << ch << "'";
+				raiseError(s.str());
+			}
+			break;
 			}
 		}
 		else if (CharUtils::isNumber(ch))
@@ -89,10 +118,33 @@ void ReadIniFile(std::istream& is, void(*evtCallback)(const ReaderEvent& evt))
 			switch (state)
 			{
 			case INITIAL:
-				// raise error that section is not started
+			{
+				std::stringstream s;
+				s << "Ожидалось начало секции, а найден символ '" << ch << "'";
+				raiseError(s.str());
+			}
+			break;
+			case WAITING_FOR_SECTION_NAME:
+				raiseError("Название секции не может начинаться с цифры");
 				break;
 			case SECTION_BODY_STARTED:
-				// raise error that param name cannot start from number
+				raiseError("Название параметра не может начинаться с цифры");
+				break;
+			case WAITING_FOR_EQUALITY_SIGN:
+			{
+				std::stringstream s;
+				s << "Ожидался знак '=', а найден символ '" << ch << "'";
+				raiseError(s.str());
+			}
+			break;
+			}
+		}
+		else if (CharUtils::isSpace(ch))
+		{
+			switch (state)
+			{
+			case PARAM_NAME_STARTED:
+				state = WAITING_FOR_EQUALITY_SIGN;
 				break;
 			}
 		}
@@ -102,18 +154,21 @@ void ReadIniFile(std::istream& is, void(*evtCallback)(const ReaderEvent& evt))
 			{
 			case INITIAL:
 			case SECTION_BODY_STARTED:
-				state = SECTION_NAME_STARTED;
-				eventBuf.clear();
-				eventStartPos = currentPos;
+				state = WAITING_FOR_SECTION_NAME;
 				break;
+			case WAITING_FOR_SECTION_NAME:
 			case SECTION_NAME_STARTED:
-				// raise error that section name already started
+				raiseError("Обнаружено открытие новой секции, когда предыдущая еще не закрыта");
 				break;
 			case PARAM_NAME_STARTED:
-				// raise error that param value is missing
-				break;
+			{
+				std::stringstream s;
+				s << "Ожидался знак '=', а найден символ '" << ch << "'";
+				raiseError(s.str());
+			}
+			break;
 			case PARAM_VALUE_STARTED:
-				// raise error that section should start on a new line
+				raiseError("Секция дожна начинаться на новой строке");
 				break;
 			}
 		}
@@ -122,18 +177,37 @@ void ReadIniFile(std::istream& is, void(*evtCallback)(const ReaderEvent& evt))
 			switch (state)
 			{
 			case INITIAL:
+			case WAITING_FOR_SECTION_NAME:
+			{
+				std::stringstream s;
+				s << "Ожидалось имя секции, а найден символ '" << ch << "'";
+				raiseError(s.str());
+			}
+			break;
 			case SECTION_BODY_STARTED:
-				// raise error that section name is not started
+				raiseError("Закрытие заголовка секции без соответствующего открытия");
 				break;
 			case SECTION_NAME_STARTED:
-				// raise section start event
+				state = WAITING_FOR_LINE_END;
+				{
+					std::string sectionName(eventBuf.cbegin(), eventBuf.cend());
+					SectionStartEvent evt(currentPos.getLine(), currentPos.getCol(), std::move(sectionName));
+				}
 				break;
 			case PARAM_NAME_STARTED:
-				// raise error that param value is missing
-				break;
+			{
+				std::stringstream s;
+				s << "Ожидался знак '=', а найден символ '" << ch << "'";
+				raiseError(s.str());
+			}
+			break;
 			case PARAM_VALUE_STARTED:
-				// raise error that not expected end of section
-				break;
+			{
+				std::stringstream s;
+				s << "Ожидалось значение параметра, а найден символ '" << ch << "'";
+				raiseError(s.str());
+			}
+			break;
 			}
 		}
 		else if (ch == CH_EQUALITY)
@@ -142,17 +216,31 @@ void ReadIniFile(std::istream& is, void(*evtCallback)(const ReaderEvent& evt))
 			{
 			case INITIAL:
 			case SECTION_BODY_STARTED:
-				// raise error that section name is not started
-				break;
+			{
+				std::stringstream s;
+				s << "Ожидалось имя параметра, а найден символ '" << ch << "'";
+				raiseError(s.str());
+			}
+			break;
 			case SECTION_NAME_STARTED:
-				// raise section start event
-				break;
+			{
+				std::stringstream s;
+				s << "Ожидалось завершение заголовка секции, а найден символ '" << ch << "'";
+				raiseError(s.str());
+			}
+			break;
 			case PARAM_NAME_STARTED:
-				
+				paramName = std::string(eventBuf.cbegin(), eventBuf.cend());
+				state = PARAM_VALUE_STARTED;
+				eventBuf.clear();
 				break;
 			case PARAM_VALUE_STARTED:
-				// raise error that not expected end of section
-				break;
+			{
+				std::stringstream s;
+				s << "Ожидалось значение параметра, а найден символ '" << ch << "'";
+				raiseError(s.str());
+			}
+			break;
 			}
 		}
 
@@ -162,9 +250,6 @@ void ReadIniFile(std::istream& is, void(*evtCallback)(const ReaderEvent& evt))
 			eventBuf.push_back(ch);
 		}
 	}
-
-	const ReadFinishEvent evt(currentPos.getLine(), currentPos.getCol());
-	evtCallback(evt);
 }
 
 
