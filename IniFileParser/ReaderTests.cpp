@@ -99,6 +99,13 @@ TEST_CASE("Начало секции", "[Reader]") {
 		Reader reader(std::move(stream));
 		CHECK_THROWS_AS(reader.getNextEvent(), ParseError);
 	}
+
+	SECTION("Пустое название секции")
+	{
+		std::unique_ptr<std::istream> stream = std::make_unique<std::istringstream>("[]");
+		Reader reader(std::move(stream));
+		CHECK_THROWS_AS(reader.getNextEvent(), ParseError);
+	}
 }
 
 TEST_CASE("Параметры", "[Reader]") {
