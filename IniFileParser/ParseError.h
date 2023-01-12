@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <stdexcept>
 #include <string>
 
@@ -7,7 +7,10 @@
 class ParseError : public std::runtime_error
 {
 public:
-	explicit ParseError(const std::string& msg) : runtime_error(msg.c_str()) {}
+	ParseError(size_t line, size_t col, const std::string& msg) : m_line(line), m_col(col), runtime_error(msg.c_str()) {}
 
-	explicit ParseError(const char* msg) : runtime_error(msg) {}
+	ParseError(size_t line, size_t col, const char* msg) : m_line(line), m_col(col), runtime_error(msg) {}
+private:
+	size_t m_line = NO_LINE;
+	size_t m_col = NO_COL;
 };

@@ -7,4 +7,6 @@ namespace CharUtils
 	bool isNumber(char ch);
 
 	bool isSpace(char ch);
+
+	bool isNewLine(char ch);
 }

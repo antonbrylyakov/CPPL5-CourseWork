@@ -4,7 +4,7 @@ namespace CharUtils
 {
 	bool isLetter(char ch)
 	{
-		return ch >= 'a' && ch <= 'z' || ch >= 'A' || ch <= 'Z';
+		return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z';
 	}
 
 	bool isNumber(char ch)
@@ -14,5 +14,9 @@ namespace CharUtils
 	bool isSpace(char ch)
 	{
 		return ch == ' ' || ch == '\t';
+	}
+	bool isNewLine(char ch)
+	{
+		return ch == '\r' || ch == '\n';
 	}
 }
