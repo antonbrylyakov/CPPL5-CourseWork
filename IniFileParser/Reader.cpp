@@ -135,6 +135,17 @@ void Reader::clearEventBuf()
 	m_buf.clear();
 }
 
+void Reader::updateState(ReaderStates state)
+{
+	m_state = state;
+}
+
+void Reader::updateState(ReaderStates state, bool hasSection)
+{
+	m_state = state;
+	m_hasSection = hasSection;
+}
+
 std::unique_ptr<ReaderEvent> Reader::processEol(bool eof, char ch)
 {
 	std::unique_ptr<ReaderEvent> evt;
@@ -158,19 +169,21 @@ std::unique_ptr<ReaderEvent> Reader::processEol(bool eof, char ch)
 			break;
 		case PARAM_VALUE_STARTED:
 		{
-			auto paramValue = StringUtils::trim(getEventText());
+			// допускаем значения с пробелами
+			std::string trimChars(1, CH_EQUALITY);
+			auto paramValue = StringUtils::trim(getEventText(), trimChars);
 			evt = std::make_unique<ParameterValueEvent>(m_eventStartLine, m_eventStartCol, std::move(m_paramName), std::move(paramValue));
 		}
-			break;
+		break;
 		}
 
 		if (!eof && ch == CH_CARET_RETURN && m_state != WAITING_FOR_NEW_LINE_CHAR)
 		{
-			m_state = WAITING_FOR_NEW_LINE_CHAR;
+			updateState(WAITING_FOR_NEW_LINE_CHAR);
 		}
 		else
 		{
-			m_state = INITIAL;
+			updateState(INITIAL);
 			newLine();
 		}
 	}
@@ -181,6 +194,7 @@ std::unique_ptr<ReaderEvent> Reader::processEol(bool eof, char ch)
 		{
 			newLine();
 			advancePos();
+			updateState(INITIAL);
 		}
 	}
 
@@ -192,14 +206,18 @@ std::unique_ptr<ReaderEvent> Reader::processLetter(char ch)
 	switch (m_state)
 	{
 	case INITIAL:
-		raiseParseError("Идентификаторы параметров не допускаются вне секций");
+		if (!m_hasSection)
+		{
+			raiseParseError("Идентификаторы параметров не допускаются вне секций");
+		}
+		else
+		{
+			updateState(PARAM_NAME_STARTED);
+			saveEventStart();
+		}
 		break;
 	case WAITING_FOR_SECTION_NAME:
-		m_state = SECTION_NAME_STARTED;
-		saveEventStart();
-		break;
-	case SECTION_BODY_STARTED:
-		m_state = PARAM_NAME_STARTED;
+		updateState(SECTION_NAME_STARTED);
 		saveEventStart();
 		break;
 	case WAITING_FOR_EQUALITY_SIGN:
@@ -210,7 +228,7 @@ std::unique_ptr<ReaderEvent> Reader::processLetter(char ch)
 		break;
 	}
 	case WAITING_FOR_SECTION_HEADER_END:
-		m_state = SECTION_NAME_STARTED;
+		updateState(SECTION_NAME_STARTED);
 		break;
 	}
 
@@ -228,10 +246,10 @@ std::unique_ptr<ReaderEvent> Reader::processSpace(char ch)
 	switch (m_state)
 	{
 	case PARAM_NAME_STARTED:
-		m_state = WAITING_FOR_EQUALITY_SIGN;
+		updateState(WAITING_FOR_EQUALITY_SIGN);
 		break;
 	case SECTION_NAME_STARTED:
-		m_state = WAITING_FOR_SECTION_HEADER_END;
+		updateState(WAITING_FOR_SECTION_HEADER_END);
 		break;
 	}
 
@@ -243,7 +261,6 @@ std::unique_ptr<ReaderEvent> Reader::processSectionHeaderStart(char ch)
 	switch (m_state)
 	{
 	case INITIAL:
-	case SECTION_BODY_STARTED:
 		m_state = WAITING_FOR_SECTION_NAME;
 		break;
 	case WAITING_FOR_SECTION_NAME:
@@ -278,12 +295,9 @@ std::unique_ptr<ReaderEvent> Reader::processSectionHeaderEnd(char ch)
 		raiseParseError(s.str());
 	}
 	break;
-	case SECTION_BODY_STARTED:
-		raiseParseError("Закрытие заголовка секции без соответствующего открытия");
-		break;
 	case SECTION_NAME_STARTED:
 	case WAITING_FOR_SECTION_HEADER_END:
-		m_state = WAITING_FOR_LINE_END;
+		updateState(WAITING_FOR_LINE_END, true);
 		{
 			auto sectionName = StringUtils::trim(getEventText());
 			return std::make_unique<SectionStartEvent>(m_eventStartLine, m_eventStartCol, std::move(sectionName));
@@ -313,7 +327,6 @@ std::unique_ptr<ReaderEvent> Reader::processEqualitySign(char ch)
 	switch (m_state)
 	{
 	case INITIAL:
-	case SECTION_BODY_STARTED:
 	{
 		std::stringstream s;
 		s << "Ожидалось имя параметра, а найден символ '" << ch << "'";
@@ -327,10 +340,10 @@ std::unique_ptr<ReaderEvent> Reader::processEqualitySign(char ch)
 		raiseParseError(s.str());
 	}
 	break;
+	case WAITING_FOR_EQUALITY_SIGN:
 	case PARAM_NAME_STARTED:
-		// TODO: trim
 		m_paramName = StringUtils::trim(getEventText());
-		m_state = PARAM_VALUE_STARTED;
+		updateState(PARAM_VALUE_STARTED);
 		clearEventBuf();
 		break;
 	case PARAM_VALUE_STARTED:
@@ -349,6 +362,15 @@ std::unique_ptr<ReaderEvent> Reader::processCommentStart(char ch)
 {
 	switch (m_state)
 	{
+	case PARAM_VALUE_STARTED:
+	{
+		std::string trimChars(1, CH_EQUALITY);
+		auto paramValue = StringUtils::trim(getEventText(), trimChars);
+		updateState(COMMENT_STARTED);
+		saveEventStart();
+		return std::make_unique<ParameterValueEvent>(m_eventStartLine, m_eventStartCol, std::move(m_paramName), std::move(paramValue));
+	}
+	break;
 	case PARAM_NAME_STARTED:
 	{
 		std::stringstream s;
@@ -364,7 +386,7 @@ std::unique_ptr<ReaderEvent> Reader::processCommentStart(char ch)
 	}
 	break;
 	default:
-		m_state = COMMENT_STARTED;
+		updateState(COMMENT_STARTED);
 		saveEventStart();
 		break;
 	}

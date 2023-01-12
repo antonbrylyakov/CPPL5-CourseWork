@@ -13,7 +13,10 @@ public:
 	std::unique_ptr<ReaderEvent> getNextEvent();
 
 private:
+	// состояние автомата
 	ReaderStates m_state = INITIAL;
+	bool m_hasSection = false;
+
 	size_t m_line = NO_LINE;
 	size_t m_col = NO_COL;
 	size_t m_eventStartLine = NO_LINE;
@@ -28,6 +31,8 @@ private:
 	void raiseParseError(const std::string& msg) const;
 	std::string getEventText() const;
 	void clearEventBuf();
+	void updateState(ReaderStates state);
+	void updateState(ReaderStates state, bool hasSection);
 	std::unique_ptr<ReaderEvent> processEol(bool eof, char ch);
 	std::unique_ptr<ReaderEvent> processLetter(char ch);
 	std::unique_ptr<ReaderEvent> processNumber(char ch);
