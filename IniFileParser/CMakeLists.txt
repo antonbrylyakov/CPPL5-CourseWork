@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required(VERSION 3.10)
 find_package(Catch2 REQUIRED)
 project(IniFileParser)
-set(sources  "ReaderEvent.h" "Constants.h" "ReaderEvent.cpp" "CommentEvent.h" "CommentEvent.cpp"   "CharUtils.h" "CharUtils.cpp"   "IniFileParserExports.h" "SectionStartEvent.h" "SectionStartEvent.cpp" "ParameterValueEvent.h" "ParameterValueEvent.cpp" "ParseError.h" "Reader.h" "Reader.cpp" "StringUtils.h" "StringUtils.cpp")
+set(sources  "ReaderEvent.h" "Constants.h" "ReaderEvent.cpp" "CommentEvent.h" "CommentEvent.cpp"   "CharUtils.h" "CharUtils.cpp"   "IniFileParserExports.h" "SectionStartEvent.h" "SectionStartEvent.cpp" "ParameterValueEvent.h" "ParameterValueEvent.cpp" "ParseError.h" "Reader.h" "Reader.cpp" "StringUtils.h" "StringUtils.cpp" "IniParser.h" "IniParser.cpp" "ParseError.cpp")
 add_library(IniFileParser SHARED ${sources})
 target_compile_definitions(IniFileParser PRIVATE INIFILEPARSER_EXPORTS)
 add_executable(IniFileParserTests ${sources} "test_main.cpp" "ReaderTests.cpp")

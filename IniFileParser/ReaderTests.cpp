@@ -195,4 +195,62 @@ TEST_CASE("Параметры", "[Reader]") {
 		CHECK(typedEvent1->getKey() == "param1");
 		CHECK(typedEvent1->getValue() == "");
 	}
+
+	SECTION("Незаконченное описание параметра")
+	{
+		std::unique_ptr<std::istream> stream = std::make_unique<std::istringstream>("[section1]\r\nparam");
+		Reader reader(std::move(stream));
+		auto evt = reader.getNextEvent();
+		CHECK_THROWS_AS(reader.getNextEvent(), ParseError);
+	}
+}
+
+TEST_CASE("Проверка номеров строк с ошибкой", "[Reader]")
+{
+	SECTION("Незаконченное описание параметра")
+	{
+		std::unique_ptr<std::istream> stream = std::make_unique<std::istringstream>("[section1]\r\nparam");
+		Reader reader(std::move(stream));
+		auto evt = reader.getNextEvent();
+		try
+		{
+			evt = reader.getNextEvent();
+		}
+		catch (ParseError& e)
+		{
+			CHECK(e.getLine() == 2);
+			CHECK(e.getCol() == 5);
+		}
+	}
+
+	SECTION("Незакрытый заголовок секции")
+	{
+		std::unique_ptr<std::istream> stream = std::make_unique<std::istringstream>("[section1]\r\nparam1=1\r\n[section2");
+		Reader reader(std::move(stream));
+		auto evt = reader.getNextEvent();
+		try
+		{
+			evt = reader.getNextEvent();
+		}
+		catch (ParseError& e)
+		{
+			CHECK(e.getLine() == 3);
+			CHECK(e.getCol() == 9);
+		}
+	}
+
+	SECTION("Параметр без секции")
+	{
+		std::unique_ptr<std::istream> stream = std::make_unique<std::istringstream>("\r\nparam1=1\r\n[section2]");
+		Reader reader(std::move(stream));
+		try
+		{
+			auto evt = reader.getNextEvent();
+		}
+		catch (ParseError& e)
+		{
+			CHECK(e.getLine() == 2);
+			CHECK(e.getCol() == 1);
+		}
+	}
 }

@@ -1,6 +1,6 @@
-#include "SectionStartEvent.h"
+ï»¿#include "SectionStartEvent.h"
 
-SectionStartEvent::SectionStartEvent(size_t line, size_t col, std::string&& sectionName) : ReaderEvent(line, col), m_sectionName(sectionName)
+SectionStartEvent::SectionStartEvent(std::string&& sectionName) : ReaderEvent(), m_sectionName(sectionName)
 {
 }
 
@@ -11,5 +11,5 @@ const std::string& SectionStartEvent::getSectionName() const
 
 void SectionStartEvent::print(std::ostream& os) const
 {
-	os << "Íà÷àëî ñåêöèè: '" << m_sectionName << "'";
+	os << "ÐÐ°Ñ‡Ð°Ð»Ð¾ ÑÐµÐºÑ†Ð¸Ð¸: '" << m_sectionName << "'";
 }

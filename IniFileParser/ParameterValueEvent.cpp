@@ -1,7 +1,7 @@
-#include "ParameterValueEvent.h"
+ï»¿#include "ParameterValueEvent.h"
 
-ParameterValueEvent::ParameterValueEvent(size_t line, size_t col, std::string&& key, std::string&& value)
-	: ReaderEvent(line, col), m_key(key), m_value(value)
+ParameterValueEvent::ParameterValueEvent(std::string&& key, std::string&& value)
+	: ReaderEvent(), m_key(key), m_value(value)
 {
 }
 
@@ -17,5 +17,5 @@ const std::string& ParameterValueEvent::getValue() const
 
 void ParameterValueEvent::print(std::ostream& os) const
 {
-	os << "Ïàðàìåòð: '" << m_key << "; Çíà÷åíèå: '" << m_value << "'";
+	os << "ÐŸÐ°Ñ€Ð°Ð¼ÐµÑ‚Ñ€: '" << m_key << "; Ð—Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ: '" << m_value << "'";
 }

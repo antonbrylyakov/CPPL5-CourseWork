@@ -1,6 +1,6 @@
 ﻿#include "CommentEvent.h"
 
-CommentEvent::CommentEvent(size_t line, size_t col, std::string&& text) : ReaderEvent(line, col), m_text(text)
+CommentEvent::CommentEvent( std::string&& text) : ReaderEvent(), m_text(text)
 {
 }
 

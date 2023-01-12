@@ -110,8 +110,6 @@ void Reader::advancePos()
 
 void Reader::saveEventStart()
 {
-	m_eventStartLine = m_line;
-	m_eventStartCol = m_col;
 	clearEventBuf();
 }
 
@@ -158,7 +156,7 @@ std::unique_ptr<ReaderEvent> Reader::processEol(bool eof, char ch)
 		{
 			const std::string trimChars = StringUtils::WHITESPACES + CH_COMMENT_START;
 			auto commentText = StringUtils::trim(getEventText(), trimChars);
-			evt = std::make_unique<CommentEvent>(m_eventStartLine, m_eventStartCol, std::move(commentText));
+			evt = std::make_unique<CommentEvent>(std::move(commentText));
 		}
 		break;
 		case SECTION_NAME_STARTED:
@@ -172,7 +170,7 @@ std::unique_ptr<ReaderEvent> Reader::processEol(bool eof, char ch)
 			// допускаем значения с пробелами
 			std::string trimChars(1, CH_EQUALITY);
 			auto paramValue = StringUtils::trim(getEventText(), trimChars);
-			evt = std::make_unique<ParameterValueEvent>(m_eventStartLine, m_eventStartCol, std::move(m_paramName), std::move(paramValue));
+			evt = std::make_unique<ParameterValueEvent>(std::move(m_paramName), std::move(paramValue));
 		}
 		break;
 		}
@@ -300,7 +298,7 @@ std::unique_ptr<ReaderEvent> Reader::processSectionHeaderEnd(char ch)
 		updateState(WAITING_FOR_LINE_END, true);
 		{
 			auto sectionName = StringUtils::trim(getEventText());
-			return std::make_unique<SectionStartEvent>(m_eventStartLine, m_eventStartCol, std::move(sectionName));
+			return std::make_unique<SectionStartEvent>(std::move(sectionName));
 		}
 		break;
 	case PARAM_NAME_STARTED:
@@ -368,7 +366,7 @@ std::unique_ptr<ReaderEvent> Reader::processCommentStart(char ch)
 		auto paramValue = StringUtils::trim(getEventText(), trimChars);
 		updateState(COMMENT_STARTED);
 		saveEventStart();
-		return std::make_unique<ParameterValueEvent>(m_eventStartLine, m_eventStartCol, std::move(m_paramName), std::move(paramValue));
+		return std::make_unique<ParameterValueEvent>(std::move(m_paramName), std::move(paramValue));
 	}
 	break;
 	case PARAM_NAME_STARTED:

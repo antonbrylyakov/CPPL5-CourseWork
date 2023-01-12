@@ -19,8 +19,6 @@ private:
 
 	size_t m_line = NO_LINE;
 	size_t m_col = NO_COL;
-	size_t m_eventStartLine = NO_LINE;
-	size_t m_eventStartCol = NO_COL;
 	std::list<char> m_buf;
 	std::unique_ptr<std::istream> m_is;
 	std::string m_paramName;
