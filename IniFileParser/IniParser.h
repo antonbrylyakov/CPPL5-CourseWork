@@ -4,8 +4,10 @@
 #include <memory>
 #include <sstream>
 #include "Reader.h"
+#include "IniFileParserExports.h"
+#include "ReadParamError.h"
 
-class IniParser
+class INIFILEPARSER_API IniParser
 {
 public:
 	IniParser(const std::string& fileName);
@@ -15,8 +17,16 @@ public:
 		auto rawValue = getRawValue(path);
 		std::stringstream s(rawValue);
 		T res;
-		s >> res;
-		return res;
+		if (s >> res)
+		{
+			return res;
+		}
+		else
+		{
+			std::stringstream msg;
+			msg << "Значение '" << rawValue << "' невозможно преобразовать к типу " << typeid(T).name();
+			throw ReadParamError(msg.str());
+		}
 	}
 
 	template <> std::string getValue<std::string>(const std::string& path)

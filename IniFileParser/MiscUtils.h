@@ -19,7 +19,7 @@ namespace MiscUtils
 			{
 				os << ", ";
 			}
-			os << it->first;
+			os << "'" << it->first << "'";
 			++it;
 		}
 	}

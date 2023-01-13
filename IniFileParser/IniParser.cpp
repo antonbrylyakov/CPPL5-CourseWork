@@ -7,7 +7,6 @@
 #include "SectionStartEvent.h"
 #include "Reader.h"
 #include "StringUtils.h"
-#include "ReadParamError.h"
 #include "MiscUtils.h"
 
 IniParser::IniParser(const std::string& fileName): m_rawValues(), m_fileName(fileName)
@@ -30,8 +29,8 @@ std::string IniParser::getRawValue(const std::string& path)
 
 	if (pathSegments.size() == 2)
 	{
-		const auto sectionName = pathSegments[0];
-		const auto paramName = pathSegments[1];
+		const auto sectionName = StringUtils::toLower(pathSegments[0]);
+		const auto paramName = StringUtils::toLower(pathSegments[1]);
 		const auto sectionData = m_rawValues.find(sectionName);
 		if (sectionData != m_rawValues.end())
 		{
@@ -43,7 +42,7 @@ std::string IniParser::getRawValue(const std::string& path)
 			else
 			{
 				std::stringstream s;
-				s << "Неверное имя параметра " << paramName << " в секции " << sectionName << ". Допустимые параметры: ";
+				s << "Неверное имя параметра " << paramName << " в секции '" << sectionName << "'. Допустимые параметры: ";
 				MiscUtils::printKeys(sectionData->second, s);
 				throw ReadParamError(s.str());
 			}
@@ -77,7 +76,7 @@ void IniParser::initializeFromStream(std::shared_ptr<std::istream> is)
 		else if (typeid(*evt) == typeid(ParameterValueEvent))
 		{
 			auto parameterValueEvent = dynamic_cast<ParameterValueEvent*>(evt.get());
-			m_rawValues[currentSectionName][parameterValueEvent->getKey()] = parameterValueEvent->getValue();
+			m_rawValues[currentSectionName][StringUtils::toLower(parameterValueEvent->getKey())] = parameterValueEvent->getValue();
 		}
 	}
 
@@ -94,6 +93,13 @@ void IniParser::initialize()
 	{
 		// вариант загрузки из файла
 		auto ifs = std::make_shared<std::ifstream>(m_fileName);
+		if (!ifs->is_open())
+		{
+			std::stringstream s;
+			s << "Невозможно открыть файл '" << m_fileName << "'";
+			throw ReadParamError(s.str());
+		}
+
 		initializeFromStream(ifs);
 		ifs->close();
 	}
