@@ -13,8 +13,8 @@ namespace StringUtils
 
 	std::string toLower(const std::string& s);
 
-	template <typename It>
-	void split(const std::string& s, It destBegin, const char delimiter)
+	template <typename T>
+	void split(const std::string& s, T& container, const char delimiter)
 	{
 		size_t itemBegin;
 		size_t itemEnd = 0;
@@ -22,8 +22,7 @@ namespace StringUtils
 		{
 			itemEnd = s.find(delimiter, itemBegin);
 			const auto item = s.substr(itemBegin, itemEnd - itemBegin);
-			*destBegin = item;
-			++destBegin;
+			container.push_back(item);
 		}
 	}
 }

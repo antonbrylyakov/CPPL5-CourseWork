@@ -10,7 +10,19 @@ class IniParser
 public:
 	IniParser(const std::string& fileName);
 	IniParser(std::shared_ptr<std::istream> is);
-	template <typename T> T getValue(const std::string& path);
+	template <typename T> T getValue(const std::string& path)
+	{
+		auto rawValue = getRawValue(path);
+		std::stringstream s(rawValue);
+		T res;
+		s >> res;
+		return res;
+	}
+
+	template <> std::string getValue<std::string>(const std::string& path)
+	{
+		return getRawValue(path);
+	}
 
 private:
 	bool m_initialized = false;
@@ -21,17 +33,3 @@ private:
 	void initialize();
 	void initializeFromStream(std::shared_ptr<std::istream> is);
 };
-
-template <typename T> T IniParser::getValue(const std::string& path)
-{
-	auto rawValue = getRawValue(path);
-	std::stringstream s(rawValue);
-	T res;
-	s >> res;
-	return res;
-}
-
-template <> std::string IniParser::getValue<std::string>(const std::string& path)
-{
-	return getRawValue(path);
-}

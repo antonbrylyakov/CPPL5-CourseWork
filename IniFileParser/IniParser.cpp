@@ -20,15 +20,15 @@ IniParser::IniParser(std::shared_ptr<std::istream> is): m_rawValues(), m_is(is)
 
 std::string IniParser::getRawValue(const std::string& path)
 {
-	std::vector<std::string> pathSegments;
-	StringUtils::split(path, pathSegments.begin(), '.');
-	if (pathSegments.size() != 2)
+	if (!m_initialized)
 	{
-		std::stringstream s;
-		s << "Переданный путь к параметру не является валидным '" << path  << "'";
-		throw ReadParamError(s.str());
+		initialize();
 	}
-	else if (pathSegments.size() == 2)
+
+	std::vector<std::string> pathSegments;
+	StringUtils::split(path, pathSegments, '.');
+
+	if (pathSegments.size() == 2)
 	{
 		const auto sectionName = pathSegments[0];
 		const auto paramName = pathSegments[1];
@@ -55,6 +55,12 @@ std::string IniParser::getRawValue(const std::string& path)
 			MiscUtils::printKeys(m_rawValues, s);
 			throw ReadParamError(s.str());
 		}
+	}
+	else
+	{
+		std::stringstream s;
+		s << "Переданный путь к параметру не является валидным '" << path << "'";
+		throw ReadParamError(s.str());
 	}
 }
 

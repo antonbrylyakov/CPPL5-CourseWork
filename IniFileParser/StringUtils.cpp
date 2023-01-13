@@ -20,7 +20,7 @@ namespace StringUtils
 
 	std::string toLower(const std::string& s)
 	{
-		std::string res;
+		std::string res(s.size(), 0);
 		std::transform(s.cbegin(),s.cend(), res.begin(), std::tolower);
 		return res;
 	}
