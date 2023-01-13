@@ -3,6 +3,8 @@
 #include "windows.h"
 #endif
 #include "IniParser.h"
+#include "ParseError.h"
+#include "ReadParamError.h"
 
 
 int main(int argc, char* argv[])
@@ -15,10 +17,15 @@ int main(int argc, char* argv[])
 	IniParser parser("example.ini");
 	try
 	{
-		std::cout << parser.getValue<int>("Section4.Mode") << std::endl;
+		std::cout << parser.getValue<std::string>("Section2.Var2") << std::endl;
 	}
-	catch (std::runtime_error& e)
+	catch (ReadParamError& e)
 	{
 		std::cout << "Ошибка обработки ini-файла:" << std::endl << e.what() << std::endl;
+	}
+	catch (ParseError& e)
+	{
+		std::cout << "Входной ini-файла содержит неверный синтаксис:" << std::endl 
+			<< "Строка: " << e.getLine() << " : " << e.what() << std::endl;
 	}
 }

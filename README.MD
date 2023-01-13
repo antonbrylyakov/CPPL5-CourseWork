@@ -7,3 +7,4 @@
      - IniFileParserTests cmake target - тесты на Catch2
  - IniFileParserApp - демонстрационное приложение, которое вызывает IniParser
     - IniFileParserApp cmake target
+    - example.ini - файл с примером из задания. Настроен на копирование в выходную директорию

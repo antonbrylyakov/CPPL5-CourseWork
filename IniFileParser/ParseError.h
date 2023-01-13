@@ -2,10 +2,10 @@
 #include <stdexcept>
 #include <string>
 #include "Constants.h"
+#include "IniFileParserExports.h"
 
 
-
-class ParseError : public std::runtime_error
+class INIFILEPARSER_API ParseError: public std::runtime_error
 {
 public:
 	ParseError(size_t line, size_t col, const std::string& msg) : m_line(line), m_col(col), runtime_error(msg.c_str()) {}
