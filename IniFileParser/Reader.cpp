@@ -7,7 +7,7 @@
 #include "SectionStartEvent.h"
 #include "StringUtils.h"
 
-Reader::Reader(std::unique_ptr<std::istream> is) : m_is(std::move(is))
+Reader::Reader(std::shared_ptr<std::istream> is) : m_is(std::move(is))
 {
 }
 

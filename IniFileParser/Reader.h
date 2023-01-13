@@ -9,7 +9,10 @@
 class Reader 
 {
 public:
-	Reader(std::unique_ptr<std::istream> is);
+	// Используем входной параметр как shared_ptr, 
+	// т.к. для потоков разных типов может потребоваться управление извне.
+	// Например, закрытие файлового потока
+	Reader(std::shared_ptr<std::istream> is);
 	std::unique_ptr<ReaderEvent> getNextEvent();
 
 private:
@@ -20,7 +23,7 @@ private:
 	size_t m_line = NO_LINE;
 	size_t m_col = NO_COL;
 	std::list<char> m_buf;
-	std::unique_ptr<std::istream> m_is;
+	std::shared_ptr<std::istream> m_is;
 	std::string m_paramName;
 	void newLine();
 	void advancePos();
