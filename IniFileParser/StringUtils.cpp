@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "StringUtils.h"
 #include <algorithm>
+#include <functional>
 
 namespace StringUtils
 {
@@ -23,5 +24,35 @@ namespace StringUtils
 		std::string res(s.size(), 0);
 		std::transform(s.cbegin(),s.cend(), res.begin(), std::tolower);
 		return res;
+	}
+
+	bool equalToCi::operator()(const std::string& lhs, const std::string& rhs) const
+	{
+		if (lhs.length() != rhs.length())
+		{
+			return false;
+		}
+
+		auto itl = lhs.cbegin(); 
+		auto itr = rhs.cbegin();
+
+		while (itl != lhs.cend() && itr != rhs.cend())
+		{
+			if (std::tolower(*itl) != std::tolower(*itr))
+			{
+				return false;
+			}
+
+			++itl;
+			++itr;
+		}
+
+		return true;
+	}
+	std::size_t hashCi::operator()(const std::string& s) const
+	{
+		const auto sl = toLower(s);
+		std::hash<std::string> h;
+		return h(sl);
 	}
 }

@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 	IniParser parser("example.ini");
 	try
 	{
-		std::cout << parser.getValue<std::string>("Section2.Var2") << std::endl;
+		std::cout << parser.getValue<std::string>("section2.Var8") << std::endl;
 	}
 	catch (ReadParamError& e)
 	{

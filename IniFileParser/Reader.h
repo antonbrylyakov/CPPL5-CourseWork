@@ -5,7 +5,7 @@
 #include "ReaderEvent.h"
 
 
-
+// Класс для чтения входного ini-файла из потока
 class Reader 
 {
 public:
@@ -13,6 +13,7 @@ public:
 	// т.к. для потоков разных типов может потребоваться управление извне.
 	// Например, закрытие файлового потока
 	Reader(std::shared_ptr<std::istream> is);
+	// Метод получения очередного события, возникающего по мере чтения файла
 	std::unique_ptr<ReaderEvent> getNextEvent();
 
 private:

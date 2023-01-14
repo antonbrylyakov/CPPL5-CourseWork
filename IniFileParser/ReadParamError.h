@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "IniFileParserExports.h"
 
+// Исключение, возникающее при некорректной операции чтения параметра
 class INIFILEPARSER_API ReadParamError : public std::runtime_error
 {
 public:

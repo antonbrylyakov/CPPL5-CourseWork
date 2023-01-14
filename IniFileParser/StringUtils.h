@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <string>
 
+// Строковые утилиты
 namespace StringUtils
 {
 	const std::string WHITESPACES = " \n\r\t";
@@ -25,4 +26,16 @@ namespace StringUtils
 			container.push_back(item);
 		}
 	}
+
+	// Функтор сравнения строк без учета регистра для использования в словаре
+	struct equalToCi
+	{
+		bool operator()(const std::string& lhs, const std::string& rhs) const;
+	};
+
+	// Функтор хэширования строк без учета регистра для использования в словаре
+	struct hashCi
+	{
+		std::size_t operator()(const std::string& s) const;
+	};
 }

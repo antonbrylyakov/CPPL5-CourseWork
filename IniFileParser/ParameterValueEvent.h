@@ -3,6 +3,7 @@
 #include <string>
 
 
+// Событие чтения параметра со значением
 class ParameterValueEvent : public ReaderEvent
 {
 public:

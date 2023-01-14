@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.10)
+﻿cmake_minimum_required(VERSION 3.2.1)
 project(IniFileParserApp)
 set(sources  "main.cpp")
 add_executable(IniFileParserApp ${sources})

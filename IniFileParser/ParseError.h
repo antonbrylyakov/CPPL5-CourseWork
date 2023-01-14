@@ -4,7 +4,7 @@
 #include "Constants.h"
 #include "IniFileParserExports.h"
 
-
+// Исключение, возникающее при обработке файла с неверным синтаксисом
 class INIFILEPARSER_API ParseError: public std::runtime_error
 {
 public:

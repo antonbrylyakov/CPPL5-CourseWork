@@ -29,8 +29,8 @@ std::string IniParser::getRawValue(const std::string& path)
 
 	if (pathSegments.size() == 2)
 	{
-		const auto sectionName = StringUtils::toLower(pathSegments[0]);
-		const auto paramName = StringUtils::toLower(pathSegments[1]);
+		const auto sectionName = pathSegments[0];
+		const auto paramName = pathSegments[1];
 		const auto sectionData = m_rawValues.find(sectionName);
 		if (sectionData != m_rawValues.end())
 		{
@@ -71,12 +71,12 @@ void IniParser::initializeFromStream(std::shared_ptr<std::istream> is)
 	{
 		if (auto sectionStartEvent = dynamic_cast<SectionStartEvent*>(evt.get()))
 		{
-			currentSectionName = StringUtils::toLower(sectionStartEvent->getSectionName());
+			currentSectionName = sectionStartEvent->getSectionName();
 		}
 		else if (typeid(*evt) == typeid(ParameterValueEvent))
 		{
 			auto parameterValueEvent = dynamic_cast<ParameterValueEvent*>(evt.get());
-			m_rawValues[currentSectionName][StringUtils::toLower(parameterValueEvent->getKey())] = parameterValueEvent->getValue();
+			m_rawValues[currentSectionName][parameterValueEvent->getKey()] = parameterValueEvent->getValue();
 		}
 	}
 

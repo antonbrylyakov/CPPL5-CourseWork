@@ -2,7 +2,7 @@
 #include "ReaderEvent.h"
 #include <string>
 
-
+// Событие чтения заголовка секции
 class SectionStartEvent : public ReaderEvent
 {
 public:
