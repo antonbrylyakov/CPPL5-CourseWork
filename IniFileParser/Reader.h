@@ -13,6 +13,12 @@ public:
 	// т.к. для потоков разных типов может потребоваться управление извне.
 	// Например, закрытие файлового потока
 	Reader(std::shared_ptr<std::istream> is);
+	// Конструктор копирования и оператор копирующего присваивания удалены, т.к. поток мы не копируем
+	Reader(const Reader&) = delete;
+	Reader& operator =(const Reader&) = delete;
+	Reader(Reader&&) = default;
+	Reader& operator =(Reader&&) = default;
+
 	// Метод получения очередного события, возникающего по мере чтения файла
 	std::unique_ptr<ReaderEvent> getNextEvent();
 

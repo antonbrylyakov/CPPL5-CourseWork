@@ -20,6 +20,12 @@ public:
 	IniParser(const std::string& fileName);
 	// Конструктор для чтения из потока
 	IniParser(std::shared_ptr<std::istream> is);
+	// Конструктор копирования и оператор копирующего присваивания удалены, т.к. в общем случае поток мы не копируем
+	IniParser(const IniParser&) = delete;
+	IniParser& operator =(const IniParser&) = delete;
+	IniParser(IniParser&& ) = default;
+	IniParser& operator =(IniParser&&) = default;
+
 	template <typename T> T getValue(const std::string& path)
 	{
 		auto rawValue = getRawValue(path);
