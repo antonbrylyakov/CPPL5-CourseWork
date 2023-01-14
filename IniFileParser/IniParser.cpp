@@ -73,9 +73,8 @@ void IniParser::initializeFromStream(std::shared_ptr<std::istream> is)
 		{
 			currentSectionName = sectionStartEvent->getSectionName();
 		}
-		else if (typeid(*evt) == typeid(ParameterValueEvent))
+		else if (auto parameterValueEvent = dynamic_cast<ParameterValueEvent*>(evt.get()))
 		{
-			auto parameterValueEvent = dynamic_cast<ParameterValueEvent*>(evt.get());
 			m_rawValues[currentSectionName][parameterValueEvent->getKey()] = parameterValueEvent->getValue();
 		}
 	}
