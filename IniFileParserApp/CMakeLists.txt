@@ -6,3 +6,4 @@ target_link_libraries(IniFileParserApp IniFileParser)
 target_include_directories(IniFileParserApp PRIVATE "../IniFileParser")
 # Копируем файл с примером
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/example.ini ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/example.ini COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/example_error.ini ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/example_error.ini COPYONLY)

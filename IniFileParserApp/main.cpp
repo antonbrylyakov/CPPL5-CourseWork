@@ -6,18 +6,13 @@
 #include "ParseError.h"
 #include "ReadParamError.h"
 
-
-int main(int argc, char* argv[])
+template<typename T>
+void tryGetParamAndPrint(IniParser& parser, const std::string& name)
 {
-	setlocale(LC_ALL, "Russian");
-#ifdef _WIN32
-	SetConsoleCP(1251);
-#endif
-
-	IniParser parser("example.ini");
 	try
 	{
-		std::cout << parser.getValue<std::string>("section2.Var8") << std::endl;
+		std::cout << "Попытка чтения параметра '" << name << "'..." << std::endl;
+		std::cout << parser.getValue<T>(name) << std::endl;
 	}
 	catch (ReadParamError& e)
 	{
@@ -25,7 +20,32 @@ int main(int argc, char* argv[])
 	}
 	catch (ParseError& e)
 	{
-		std::cout << "Входной ini-файла содержит неверный синтаксис:" << std::endl 
+		std::cout << "Входной ini-файла содержит неверный синтаксис:" << std::endl
 			<< "Строка: " << e.getLine() << " : " << e.what() << std::endl;
 	}
+
+	std::cout << std::endl;
+}
+
+// Пример использования парсера
+int main(int argc, char* argv[])
+{
+	setlocale(LC_ALL, "Russian");
+#ifdef _WIN32
+	SetConsoleCP(1251);
+#endif
+
+	std::string fileName("exaple.ini");
+	IniParser parser1(fileName);
+	std::cout << "Чтение файла '" << fileName << "'" << std::endl;
+	tryGetParamAndPrint<std::string>(parser1, "Section1.var1");
+	tryGetParamAndPrint<std::string>(parser1, "Section1.var2");
+	tryGetParamAndPrint<std::string>(parser1, "Section18.var1");
+	tryGetParamAndPrint<std::string>(parser1, "Section1.var8");
+	tryGetParamAndPrint<std::string>(parser1, "Section1.var3");
+
+	fileName = "example_error.ini";
+	IniParser parser2(fileName);
+	std::cout << "Чтение файла '" << fileName << "'" << std::endl;
+	tryGetParamAndPrint<std::string>(parser2, "Section1.var1");
 }
